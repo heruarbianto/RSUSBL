@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model KARYAWAN {
+  Id        Int      @id @default(autoincrement())
+  Nama      String   @db.VarChar(255)
+  Tgl_Lahir DateTime @db.Date
+  Gaji      Decimal  @db.Decimal(15, 2)
+}
+
+model TLOG {
+  Id         Int      @id @default(autoincrement())
+  Tanggal    DateTime @db.Date
+  Jam        DateTime @db.Time
+  Keterangan String   @db.Text
+}

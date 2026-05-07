@@ -1,65 +1,162 @@
+"use client";
 import Image from "next/image";
+import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCircleNotch,
+  faEnvelope,
+  faIdCard,
+  faKey,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
+  const [loginValue, setLoginValue] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState(
+    "Please sign in to continue"
+  );
+  const [statusType, setStatusType] = useState<"default" | "error" | "success">(
+    "default"
+  );
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setLoading(true);
+    setStatusType("default");
+    setStatusMessage("Checking credentials...");
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          loginValue,
+          passwordValue,
+        }),
+      });
+
+      const data = await res.json();
+
+      // cek dari metadata.error
+      if (data?.metadata?.error !== 0) {
+        setStatusType("error");
+        setStatusMessage(data?.metadata?.message || "Login gagal.");
+        return;
+      }
+
+      // success
+      setStatusType("success");
+      setStatusMessage("Login berhasil, mengalihkan...");
+
+      setTimeout(() => {
+        router.push("/karyawan");
+      }, 1000);
+    } catch (error) {
+      setStatusType("error");
+      setStatusMessage("Terjadi kesalahan koneksi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      <form
+        onSubmit={handleLogin}
+        className="sm:w-[350px] w-full text-center border border-gray-300/60 rounded-2xl px-8 bg-white"
+      >
+        {/* <h1 className="text-gray-900 text-3xl mt-10 font-medium">Login</h1> */}
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+          src={"/image/images.jpeg"}
+          width={450}
+          height={150}
+          alt="Logo"
+          className="mt-10"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <p
+          className={`text-sm mt-2 transition-all duration-300 ${
+            statusType === "error"
+              ? "text-red-500"
+              : statusType === "success"
+              ? "text-green-600"
+              : "text-gray-500"
+          }`}
+        >
+          {statusMessage}
+          {errorMessage && (
+            <>
+              <FontAwesomeIcon
+                icon={faSpinner}
+                className="transition-all duration-300 animate-spin"
+              ></FontAwesomeIcon>
+            </>
+          )}
+        </p>
+        <div className="flex items-center w-full mt-4 bg-white border border-gray-300/80 h-12 rounded-full overflow-hidden pl-6 gap-2">
+          {/* <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /><rect x="2" y="4" width="20" height="16" rx="2" /></svg> */}
+          <FontAwesomeIcon icon={faIdCard}></FontAwesomeIcon>
+          <input
+            type="text"
+            name="username"
+            placeholder="Email"
+            className="border-none outline-none ring-0"
+            value={loginValue}
+            onChange={(e) => {
+              setLoginValue(e.target.value);
+              setStatusType("default");
+              setStatusMessage("Please sign in to continue");
+            }}
+            required
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex items-center mt-4 w-full bg-white border border-gray-300/80 h-12 rounded-full overflow-hidden pl-6 gap-2">
+          {/* <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock-icon lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg> */}
+          <FontAwesomeIcon icon={faKey}></FontAwesomeIcon>
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className="border-none outline-none ring-0"
+            value={passwordValue}
+            onChange={(e) => {
+              setPasswordValue(e.target.value);
+              setStatusType("default");
+              setStatusMessage("Please sign in to continue");
+            }}
+            required
+          />
         </div>
-      </main>
+        {/* <div className="mt-4 text-left text-indigo-500">
+                    <button className="text-sm" type="reset">Forget password?</button>
+                </div> */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-4 w-full h-11 rounded-full text-white bg-indigo-500 hover:opacity-90 transition-opacity mb-11"
+        >
+          {/* {state === "login" ? "Login" : "Sign up"} */}
+          {loading ? (
+            <>
+              <FontAwesomeIcon icon={faCircleNotch} className="animate-spin" />
+            </>
+          ) : (
+            "Sign In"
+          )}
+        </button>
+        {/* <p onClick={() => setState(prev => prev === "login" ? "register" : "login")} className="text-gray-500 text-sm mt-3 mb-11">{state === "login" ? "Don't have an account?" : "Already have an account?"} <a href="#" className="text-indigo-500 hover:underline">click here</a></p> */}
+      </form>
     </div>
   );
 }

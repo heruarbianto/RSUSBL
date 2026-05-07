@@ -1,0 +1,19 @@
+-- CreateTable
+CREATE TABLE `KARYAWAN` (
+    `Id` INTEGER NOT NULL AUTO_INCREMENT,
+    `Nama` VARCHAR(255) NOT NULL,
+    `Tgl_Lahir` DATE NOT NULL,
+    `Gaji` DECIMAL(15, 2) NOT NULL,
+
+    PRIMARY KEY (`Id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `TLOG` (
+    `Id` INTEGER NOT NULL AUTO_INCREMENT,
+    `Tanggal` DATE NOT NULL,
+    `Jam` TIME NOT NULL,
+    `Keterangan` TEXT NOT NULL,
+
+    PRIMARY KEY (`Id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
